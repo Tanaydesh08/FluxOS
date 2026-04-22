@@ -1,5 +1,6 @@
 package com.fluxgate.backend.config;
 
+import com.fluxgate.backend.security.ApiKeyFilter;
 import com.fluxgate.backend.security.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig { //temp
     private  final JwtFilter jwtFilter;
+    private final ApiKeyFilter apiKeyFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -32,6 +34,7 @@ public class SecurityConfig { //temp
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .formLogin(form -> form.disable());
 
