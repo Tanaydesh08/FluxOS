@@ -1,6 +1,8 @@
 package com.fluxgate.backend.security;
 
+import com.fluxgate.backend.entity.ApiUsage;
 import com.fluxgate.backend.repository.ApiKeyRepository;
+import com.fluxgate.backend.repository.ApiUsageRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,12 +14,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
 public class ApiKeyFilter extends OncePerRequestFilter {
     private final ApiKeyRepository apiKeyRepository;
     private final StringRedisTemplate redisTemplate;
+    private final ApiUsageRepository apiUsageRepository;
 
     private static final int LIMIT = 5;
 
@@ -65,6 +69,13 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             response.getWriter().write("Rate limit exceeded...!!!!");
             return;
         }
+        apiUsageRepository.save(
+                ApiUsage.builder()
+                        .apiKey(apiKey)
+                        .endpoint(request.getRequestURI())
+                        .timestamp(LocalDateTime.now())
+                        .build()
+        );
         filterChain.doFilter(request, response);
     }
 }
