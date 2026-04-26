@@ -2,8 +2,10 @@ package com.fluxgate.backend.service;
 
 import com.fluxgate.backend.dto.LoginRequest;
 import com.fluxgate.backend.dto.SignUpRequest;
+import com.fluxgate.backend.entity.Plan;
 import com.fluxgate.backend.entity.Role;
 import com.fluxgate.backend.entity.User;
+import com.fluxgate.backend.repository.PlanRepository;
 import com.fluxgate.backend.repository.UserRepository;
 import com.fluxgate.backend.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
+    private final PlanRepository planRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -23,6 +26,9 @@ public class AuthService {
             throw new RuntimeException("Email already exists!!!!");
         }
         User user = new User();
+        Plan freePlan = planRepository.findByName("FREE")
+                .orElseThrow();
+        user.setPlan(freePlan);
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Role.USER);
